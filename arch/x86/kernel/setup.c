@@ -8,6 +8,7 @@
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/cpu.h>
+#include <linux/percpu.h>
 #include <linux/crash_dump.h>
 #include <linux/dma-map-ops.h>
 #include <linux/efi.h>
@@ -1311,3 +1312,34 @@ bool arch_cpu_is_hotpluggable(int cpu)
 	return cpu > 0;
 }
 #endif /* CONFIG_HOTPLUG_CPU */
+
+/* bodge: overwrite arch_register_cpu to add a tsc sysfs entry post-init of the cpu.
+ * i doubt this is the right spot for it to live, but it's at least justifiable as
+ * it's next to arch_cpu_is_hotpluggable.
+ */
+static ssize_t tsc_freq_khz_show(struct device *dev,
+				 struct device_attribute *attr,
+				 char *buf)
+{
+	return sysfs_emit(buf, "%lu\n", tsc_khz);
+}
+
+static DEVICE_ATTR_RO(tsc_freq_khz);
+
+int arch_register_cpu(int cpu)
+{
+	struct cpu *c = per_cpu_ptr(cpu_devices, cpu);
+	int register_result;
+
+	c->hotpluggable = arch_cpu_is_hotpluggable(cpu);
+
+	register_result = register_cpu(c, cpu);
+
+	if (!register_result) {
+		device_create_file(&c->dev, &dev_attr_tsc_freq_khz);
+	}
+
+	return register_result;
+}
+
+
