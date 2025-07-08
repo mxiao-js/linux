@@ -9,6 +9,7 @@
 #include <linux/console.h>
 #include <linux/cpu.h>
 #include <linux/percpu.h>
+#include <linux/device.h>
 #include <linux/crash_dump.h>
 #include <linux/dma-map-ops.h>
 #include <linux/efi.h>
