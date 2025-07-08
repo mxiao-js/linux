@@ -1343,4 +1343,13 @@ int arch_register_cpu(int cpu)
 	return register_result;
 }
 
+#ifdef CONFIG_HOTPLUG_CPU
+void arch_unregister_cpu(int cpu)
+{
+	struct cpu *c = per_cpu_ptr(cpu_devices, cpu);
 
+	device_remove_file(&c->dev, &dev_attr_tsc_freq_khz);
+
+	unregister_cpu();
+}
+#endif /* CONFIG_HOTPLUG_CPU */
