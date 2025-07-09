@@ -1329,7 +1329,7 @@ static DEVICE_ATTR_RO(tsc_freq_khz);
 
 int arch_register_cpu(int cpu)
 {
-	struct cpu *c = per_cpu_ptr(cpu_devices, cpu);
+	struct cpu *c = &per_cpu(cpu_devices, cpu);
 	int register_result;
 
 	c->hotpluggable = arch_cpu_is_hotpluggable(cpu);
@@ -1346,10 +1346,10 @@ int arch_register_cpu(int cpu)
 #ifdef CONFIG_HOTPLUG_CPU
 void arch_unregister_cpu(int cpu)
 {
-	struct cpu *c = per_cpu_ptr(cpu_devices, cpu);
+	struct cpu *c = &per_cpu(cpu_devices, cpu);
 
 	device_remove_file(&c->dev, &dev_attr_tsc_freq_khz);
 
-	unregister_cpu();
+	unregister_cpu(c);
 }
 #endif /* CONFIG_HOTPLUG_CPU */
